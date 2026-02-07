@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taste Haven Menu</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#8B5CF6',
+                        secondary: '#EC4899',
+                        accent: '#10B981',
+                        darkbg: '#1E293B',
+                        lightbg: '#F8FAFC'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .menu-item {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .menu-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .category-section {
+            scroll-margin-top: 80px;
+        }
+        .admin-item {
+            transition: background-color 0.2s;
+        }
+        .admin-item:hover {
+            background-color: rgba(139, 92, 246, 0.05);
+        }
+        @media (prefers-reduced-motion) {
+            .menu-item, .admin-item {
+                transition: none;
+            }
+        }
+    </style>
+</head>
+<body class="bg-lightbg dark:bg-darkbg text-gray-800 dark:text-gray-200 transition-colors duration-300">
+    <!-- Header -->
+    <header class="sticky top-0 z-50 bg-white dark:bg-gray-900 shadow-sm px-4 py-2">
+  <div class="max-w-7xl mx-auto flex items-center justify-between">
+
+    <!-- Logo -->
+    <div class="flex items-center gap-2">
+      <div class="bg-primary text-white w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm">
+        TH
+      </div>
+
+      <h1 class="text-lg font-bold text-primary">
+        Taste Haven
+      </h1>
+    </div>
+
+    <!-- Right Controls -->
+    <div class="flex items-center gap-2">
+
+      <!-- Dark Mode -->
+      <button
+        id="darkModeToggle"
+        class="p-1.5 rounded-full bg-gray-200 dark:bg-gray-700 text-sm"
+      >
+        <span class="sun-icon">☀️</span>
+        <span class="moon-icon hidden">🌙</span>
+      </button>
+
+      <!-- QR -->
+      <button
+        id="showQR"
+        class="bg-primary text-white px-3 py-1.5 rounded-md text-sm"
+      >
+        📱
+      </button>
+
+
+      <!-- Admin (Small Top Right) -->
+
+      <button
+  id="toggleAdmin"
+  class="hidden bg-secondary text-white px-3 py-1.5 rounded-md text-sm"
+  title="Admin Panel"
+>
+  ⚙️
+</button>
+
+
+
+
+
+
+
+    </div>
+  </div>
+</header>
+
+    <!-- Search and Filter -->
+    <section class="py-4 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex flex-col sm:flex-row gap-4">
+                <div class="relative flex-1">
+                    <input type="text" id="searchInput" placeholder="Search menu items..." 
+                           class="w-full py-3 px-4 pl-10 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-primary focus:border-transparent">
+                    <div class="absolute left-3 top-3 text-gray-400">🔍</div>
+                </div>
+                
+                <div class="flex-1">
+                    <select id="categoryFilter" class="w-full py-3 px-4 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-primary focus:border-transparent">
+                        <option value="all">All Categories</option>
+                        <option value="starters">Starters</option>
+                        <option value="mains">Main Dishes</option>
+                        <option value="drinks">Drinks</option>
+                        <option value="desserts">Desserts</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Menu Sections -->
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        <div id="menuContainer">
+            <!-- Menu items will be dynamically inserted here -->
+        </div>
+    </main>
+
+    <!-- QR Code Modal -->
+    <div id="qrModal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md text-center">
+            <h2 class="text-2xl font-bold mb-4 text-gray-800 dark:text-white">Scan to View Menu</h2>
+            <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-xl inline-block mb-4">
+                <img id="qrImage" src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https://tastehaven.menu" alt="Menu QR Code" class="w-64 h-64">
+            </div>
+            <p class="text-gray-600 dark:text-gray-300 mb-4">Scan with your phone's camera to access our menu anytime</p>
+            <p class="text-xs bg-gray-100 dark:bg-gray-700 p-2 rounded mb-4 break-all">https://tastehaven.menu</p>
+            <button id="closeQRModal" class="bg-primary hover:bg-purple-700 text-white px-6 py-2 rounded-lg transition-colors">
+                Close
+            </button>
+        </div>
+    </div>
+
+
+
+    <!-- Admin Login Modal -->
+<div
+  id="adminLoginModal"
+  class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4"
+>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-sm">
+
+    <h2 class="text-xl font-bold mb-4 text-center text-primary">
+      Admin Login
+    </h2>
+
+    <form id="adminLoginForm" class="space-y-4">
+
+      <div>
+        <label class="text-sm font-medium">Password</label>
+        <input
+          type="password"
+          id="adminPassword"
+          required
+          class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700"
+          placeholder="Enter admin password"
+        />
+      </div>
+
+      <p
+        id="loginError"
+        class="hidden text-sm text-red-500 text-center"
+      >
+        Wrong password!
+      </p>
+
+      <button
+        type="submit"
+        class="w-full bg-primary text-white py-2 rounded-lg"
+      >
+        Login
+      </button>
+
+    </form>
+
+  </div>
+</div>
+
+
+    <!-- Admin Panel -->
+    <div id="adminPanel" class="hidden max-w-4xl mx-auto p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg mb-12">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-primary">Admin Panel</h2>
+            <button id="closeAdmin" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-2xl">×</button>
+        </div>
+        
+        <form id="addItemForm" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+            <div>
+                <label class="block text-sm font-medium mb-1">Item Name</label>
+                <input type="text" id="itemName" required 
+                       class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-primary focus:border-transparent">
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1">Price ($)</label>
+                <input type="number" id="itemPrice" step="0.01" min="0" required 
+                       class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-primary focus:border-transparent">
+            </div>
+            <div class="md:col-span-2">
+                <label class="block text-sm font-medium mb-1">Description</label>
+                <textarea id="itemDescription" rows="2" 
+                          class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-primary focus:border-transparent"></textarea>
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1">Category</label>
+                <select id="itemCategory" required 
+                        class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-primary focus:border-transparent">
+                    <option value="starters">Starters</option>
+                    <option value="mains">Main Dishes</option>
+                    <option value="drinks">Drinks</option>
+                    <option value="desserts">Desserts</option>
+                </select>
+            </div>
+            <div class="md:col-span-2 flex justify-end">
+                <button type="submit" class="bg-accent hover:bg-emerald-700 text-white px-6 py-2 rounded-lg transition-colors">
+                    Add Menu Item
+                </button>
+            </div>
+        </form>
+        
+        <div>
+            <h3 class="text-xl font-bold mb-4">Current Menu Items</h3>
+            <div id="adminItemList" class="space-y-3 max-h-96 overflow-y-auto pr-2">
+                <!-- Admin items will be dynamically inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-300 py-12 px-4">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div>
+                <h3 class="text-xl font-bold text-white mb-4 flex items-center">
+                    <span class="bg-primary text-white w-8 h-8 rounded-full flex items-center justify-center mr-2 text-sm">📍</span>
+                    Our Location
+                </h3>
+                <p>123 Gourmet Avenue, Foodville</p>
+                <p class="mt-2">Open Daily: 11:00 AM - 10:00 PM</p>
+                <a href="https://maps.google.com/?q=123+Gourmet+Avenue,+Foodville" target="_blank" 
+                   class="mt-4 inline-block bg-primary hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors">
+                    View on Map
+                </a>
+            </div>
+            
+            <div>
+                <h3 class="text-xl font-bold text-white mb-4 flex items-center">
+                    <span class="bg-secondary text-white w-8 h-8 rounded-full flex items-center justify-center mr-2 text-sm">📱</span>
+                    Order Now
+                </h3>
+                <p class="mb-4">Place your order via WhatsApp for quick service</p>
+                <a href="https://wa.me/1234567890?text=Hello%20Taste%20Haven,%20I%20would%20like%20to%20place%20an%20order!" 
+                   target="_blank"
+                   class="block bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg font-bold text-center mb-4 transition-colors">
+                    WhatsApp Order
+                </a>
+                <a href="tel:+1234567890" 
+                   class="block bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-bold text-center transition-colors">
+                    Call Restaurant
+                </a>
+            </div>
+            
+            <div>
+                <h3 class="text-xl font-bold text-white mb-4">Taste Haven</h3>
+                <p class="mb-4">Experience culinary excellence with our chef-crafted dishes made from the freshest ingredients.</p>
+                <div class="flex space-x-4">
+                    <a href="#" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-primary transition-colors">f</a>
+                    <a href="#" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-secondary transition-colors">in</a>
+                    <a href="#" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-accent transition-colors">ig</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="max-w-7xl mx-auto mt-12 pt-8 border-t border-gray-800 text-center text-sm">
+            <p>&copy; 2026 Taste Haven Restaurant. All rights reserved.</p>
+            <p class="mt-2">Scan the QR code to access our menu anytime!</p>
+        </div>
+    </footer>
+
+    <script>
+        // Menu data
+        let menuItems = [
+            { id: 1, name: "Truffle Arancini", price: 12.50, description: "Crispy risotto balls with black truffle and parmesan", category: "starters" },
+            { id: 2, name: "Seared Scallops", price: 18.00, description: "Pan-seared scallops with pea puree and bacon crumble", category: "starters" },
+            { id: 3, name: "Artisanal Cheese Board", price: 22.00, description: "Selection of local cheeses, honey, nuts and sourdough", category: "starters" },
+            { id: 4, name: "Grilled Salmon", price: 26.50, description: "Wild-caught salmon with lemon-dill sauce and seasonal vegetables", category: "mains" },
+            { id: 5, name: "Mushroom Risotto", price: 24.00, description: "Creamy arborio rice with wild mushrooms and truffle oil", category: "mains" },
+            { id: 6, name: "Beef Tenderloin", price: 38.00, description: "8oz grass-fed beef with red wine reduction and garlic mashed potatoes", category: "mains" },
+            { id: 7, name: "Vegan Buddha Bowl", price: 19.50, description: "Quinoa, roasted vegetables, avocado and tahini dressing", category: "mains" },
+            { id: 8, name: "Craft Beer Flight", price: 14.00, description: "Selection of 4 local craft beers", category: "drinks" },
+            { id: 9, name: "Signature Mojito", price: 13.00, description: "White rum, fresh mint, lime, soda and cane sugar", category: "drinks" },
+            { id: 10, name: "Artisanal Coffee", price: 5.50, description: "Single-origin espresso with your choice of milk", category: "drinks" },
+            { id: 11, name: "Fresh Lemonade", price: 6.00, description: "House-made with mint and a hint of ginger", category: "drinks" },
+            { id: 12, name: "Chocolate Lava Cake", price: 11.00, description: "Warm chocolate cake with molten center and vanilla ice cream", category: "desserts" },
+            { id: 13, name: "Crème Brûlée", price: 10.00, description: "Classic vanilla custard with caramelized sugar top", category: "desserts" },
+            { id: 14, name: "Seasonal Fruit Platter", price: 9.50, description: "Fresh local fruits with honey-yogurt dip", category: "desserts" }
+        ];
+
+        // DOM Elements
+        const menuContainer = document.getElementById('menuContainer');
+        const searchInput = document.getElementById('searchInput');
+        const categoryFilter = document.getElementById('categoryFilter');
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const showQR = document.getElementById('showQR');
+        const qrModal = document.getElementById('qrModal');
+        const closeQRModal = document.getElementById('closeQRModal');
+        const qrImage = document.getElementById('qrImage');
+        const toggleAdmin = document.getElementById('toggleAdmin');
+        const adminPanel = document.getElementById('adminPanel');
+        const closeAdmin = document.getElementById('closeAdmin');
+        const addItemForm = document.getElementById('addItemForm');
+        const adminItemList = document.getElementById('adminItemList');
+        const currentUrl = window.location.href;
+
+
+        // Hide admin panel on load
+adminPanel.classList.add("hidden");
+toggleAdmin.classList.add("hidden");
+
+        
+        // Generate QR code for current URL
+        qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(currentUrl)}`;
+
+        // Render menu items
+        function renderMenuItems(items) {
+            // Group items by category
+            const categories = {
+                starters: { title: "Starters", items: [] },
+                mains: { title: "Main Dishes", items: [] },
+                drinks: { title: "Drinks", items: [] },
+                desserts: { title: "Desserts", items: [] }
+            };
+            
+            items.forEach(item => {
+                if (categories[item.category]) {
+                    categories[item.category].items.push(item);
+                }
+            });
+            
+            // Build HTML for each category
+            let html = '';
+            for (const [categoryId, category] of Object.entries(categories)) {
+                if (category.items.length > 0) {
+                    html += `
+                    <section id="${categoryId}" class="category-section mb-12">
+                        <h2 class="text-3xl font-bold mb-6 pb-2 border-b-2 border-primary inline-block">${category.title}</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    `;
+                    
+                    category.items.forEach(item => {
+                        html += `
+                        <div class="menu-item bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="text-xl font-bold text-gray-900 dark:text-white">${item.name}</h3>
+                                <span class="text-lg font-bold text-primary">$${item.price.toFixed(2)}</span>
+                            </div>
+                            <p class="text-gray-600 dark:text-gray-300">${item.description}</p>
+                        </div>
+                        `;
+                    });
+                    
+                    html += `
+                        </div>
+                    </section>
+                    `;
+                }
+            }
+            
+            menuContainer.innerHTML = html || '<p class="text-center text-xl py-12 text-gray-500">No items found matching your search</p>';
+        }
+
+        // Render admin item list
+        function renderAdminItemList() {
+            adminItemList.innerHTML = '';
+            
+            menuItems.forEach(item => {
+                const categoryNames = {
+                    starters: 'Starters',
+                    mains: 'Main Dishes',
+                    drinks: 'Drinks',
+                    desserts: 'Desserts'
+                };
+                
+                const div = document.createElement('div');
+                div.className = 'admin-item p-4 bg-gray-50 dark:bg-gray-700 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between';
+                div.innerHTML = `
+                    <div>
+                        <h4 class="font-bold text-gray-900 dark:text-white">${item.name}</h4>
+                        <p class="text-sm text-gray-600 dark:text-gray-300">${categoryNames[item.category]} - $${item.price.toFixed(2)}</p>
+                        <p class="text-sm mt-1">${item.description}</p>
+                    </div>
+                    <div class="flex mt-3 sm:mt-0 space-x-2">
+                        <button class="edit-item bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm" data-id="${item.id}">✏️ Edit</button>
+                        <button class="delete-item bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm" data-id="${item.id}">🗑️ Delete</button>
+                    </div>
+                `;
+                adminItemList.appendChild(div);
+            });
+            
+            // Add event listeners to edit and delete buttons
+            document.querySelectorAll('.edit-item').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const id = parseInt(e.target.dataset.id);
+                    const item = menuItems.find(i => i.id === id);
+                    if (item) {
+                        document.getElementById('itemName').value = item.name;
+                        document.getElementById('itemPrice').value = item.price;
+                        document.getElementById('itemDescription').value = item.description;
+                        document.getElementById('itemCategory').value = item.category;
+                        
+                        // Scroll to form
+                        document.getElementById('addItemForm').scrollIntoView({ behavior: 'smooth' });
+                    }
+                });
+            });
+            
+            document.querySelectorAll('.delete-item').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const id = parseInt(e.target.dataset.id);
+                    if (confirm('Are you sure you want to delete this item?')) {
+                        menuItems = menuItems.filter(item => item.id !== id);
+                        renderMenuItems(filterItems());
+                        renderAdminItemList();
+                    }
+                });
+            });
+        }
+
+        // Filter menu items
+        function filterItems() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const category = categoryFilter.value;
+            
+            return menuItems.filter(item => {
+                const matchesSearch = item.name.toLowerCase().includes(searchTerm) || 
+                                     item.description.toLowerCase().includes(searchTerm);
+                const matchesCategory = category === 'all' || item.category === category;
+                return matchesSearch && matchesCategory;
+            });
+        }
+
+        // Initialize
+        renderMenuItems(menuItems);
+        renderAdminItemList();
+
+        // Event Listeners
+        searchInput.addEventListener('input', () => {
+            renderMenuItems(filterItems());
+        });
+        
+        categoryFilter.addEventListener('change', () => {
+            renderMenuItems(filterItems());
+        });
+        
+        // Dark mode toggle
+        darkModeToggle.addEventListener('click', () => {
+            const html = document.documentElement;
+            if (html.classList.contains('light')) {
+                html.classList.replace('light', 'dark');
+                document.querySelector('.sun-icon').classList.add('hidden');
+                document.querySelector('.moon-icon').classList.remove('hidden');
+            } else {
+                html.classList.replace('dark', 'light');
+                document.querySelector('.sun-icon').classList.remove('hidden');
+                document.querySelector('.moon-icon').classList.add('hidden');
+            }
+        });
+        
+        // QR Modal
+        showQR.addEventListener('click', () => {
+            qrModal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        });
+        
+        closeQRModal.addEventListener('click', () => {
+            qrModal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        });
+        
+        qrModal.addEventListener('click', (e) => {
+            if (e.target === qrModal) {
+                qrModal.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }
+        });
+        
+
+        
+        closeAdmin.addEventListener('click', () => {
+            adminPanel.classList.add('hidden');
+        });
+        
+        // Add/Edit item form
+        let editItemId = null;
+        addItemForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('itemName').value;
+            const price = parseFloat(document.getElementById('itemPrice').value);
+            const description = document.getElementById('itemDescription').value;
+            const category = document.getElementById('itemCategory').value;
+            
+            if (editItemId) {
+                // Edit existing item
+                const index = menuItems.findIndex(item => item.id === editItemId);
+                if (index !== -1) {
+                    menuItems[index] = { id: editItemId, name, price, description, category };
+                }
+                editItemId = null;
+            } else {
+                // Add new item
+                const newId = menuItems.length > 0 ? Math.max(...menuItems.map(i => i.id)) + 1 : 1;
+                menuItems.push({ id: newId, name, price, description, category });
+            }
+            
+            // Reset form
+            addItemForm.reset();
+            
+            // Re-render
+            renderMenuItems(filterItems());
+            renderAdminItemList();
+            
+            // Scroll to menu
+            menuContainer.scrollIntoView({ behavior: 'smooth' });
+        });
+        
+        // Close admin panel when clicking outside on mobile
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth < 768 && 
+                !adminPanel.contains(e.target) && 
+                !toggleAdmin.contains(e.target) && 
+                !adminPanel.classList.contains('hidden')) {
+                adminPanel.classList.add('hidden');
+            }
+        });
+
+        // ================= ADMIN SECURITY =================
+
+// Change this password
+const ADMIN_PASSWORD = "TasteHaven@2026";
+
+
+// Elements
+const adminLoginModal = document.getElementById("adminLoginModal");
+const adminLoginForm = document.getElementById("adminLoginForm");
+const adminPassword = document.getElementById("adminPassword");
+const loginError = document.getElementById("loginError");
+
+// Check if already logged in
+if (localStorage.getItem("isAdmin") === "true") {
+  toggleAdmin.classList.remove("hidden");
+}
+
+// Show login modal when pressing Ctrl + A (Secret Shortcut)
+document.addEventListener("keydown", (e) => {
+  if (e.ctrlKey && e.key === "a") {
+    adminLoginModal.classList.remove("hidden");
+  }
+});
+
+// Login form
+adminLoginForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+
+  if (adminPassword.value === ADMIN_PASSWORD) {
+    localStorage.setItem("isAdmin", "true");
+
+    adminLoginModal.classList.add("hidden");
+    toggleAdmin.classList.remove("hidden");
+
+    adminPassword.value = "";
+    loginError.classList.add("hidden");
+
+ alert("Admin login successful!");
+
+
+ // Open admin panel when clicking settings button
+toggleAdmin.addEventListener("click", () => {
+  adminPanel.classList.remove("hidden");
+});
+
+
+ // Open admin panel automatically
+adminPanel.classList.remove("hidden");
+
+    }});
+
+// Close modal on outside click
+adminLoginModal.addEventListener("click", (e) => {
+  if (e.target === adminLoginModal) {
+    adminLoginModal.classList.add("hidden");
+  }
+});
+
+  </script>
+</body>
+</html>
+
